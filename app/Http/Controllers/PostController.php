@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Post;
+use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
@@ -19,9 +19,13 @@ class PostController extends Controller
         return response()->json($post);
     }
 
-    // ایجاد پست جدید
+    // ایجاد پست جدید (فقط ادمین)
     public function store(Request $request)
     {
+        if (!$request->user() || !$request->user() instanceof \App\Models\Admin) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required',
@@ -33,9 +37,13 @@ class PostController extends Controller
         return response()->json($post, 201);
     }
 
-    // بروزرسانی پست
+    // ویرایش پست (فقط ادمین)
     public function update(Request $request, Post $post)
     {
+        if (!$request->user() || !$request->user() instanceof \App\Models\Admin) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required',
@@ -47,11 +55,15 @@ class PostController extends Controller
         return response()->json($post);
     }
 
-    // حذف پست
-    public function destroy(Post $post)
+    // حذف پست (فقط ادمین)
+    public function destroy(Request $request, Post $post)
     {
+        if (!$request->user() || !$request->user() instanceof \App\Models\Admin) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $post->delete();
 
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Post deleted successfully']);
     }
 }

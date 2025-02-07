@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Comment;
@@ -27,11 +26,24 @@ class CommentController extends Controller
         return response()->json($comment, 201);
     }
 
-    // حذف یک نظر خاص
-    public function destroy(Comment $comment)
+    // دریافت تمام نظرات (فقط ادمین)
+    public function allComments(Request $request)
     {
+        if (!$request->user() || !$request->user() instanceof \App\Models\Admin) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        return response()->json(Comment::latest()->paginate(10));
+    }
+
+    // حذف یک نظر (فقط ادمین)
+    public function destroy(Request $request, Comment $comment)
+    {
+        if (!$request->user() || !$request->user() instanceof \App\Models\Admin) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $comment->delete();
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Comment deleted successfully']);
     }
 }
-
